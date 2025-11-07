@@ -1,0 +1,251 @@
+{
+  "info": {
+    "name": "veterianria",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "6b2bf7f7-6dbd-46d8-9a0b-6c6bbbcf0f67"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api/v1" },
+    { "key": "userId", "value": "1" },
+    { "key": "propietarioId", "value": "1" },
+    { "key": "searchTerm", "value": "Juan" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set dynamic variables at collection level",
+          "pm.collectionVariables.set('requestId', pm.variables.replaceIn('{{$guid}}'));",
+          "pm.collectionVariables.set('timestamp', Date.now());",
+          "pm.request.headers.add({ key: 'X-Request-Id', value: pm.collectionVariables.get('requestId') });"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Basic checks available to all responses",
+          "pm.test('Response time < 1500ms', function () { pm.expect(pm.response.responseTime).to.be.below(1500); });",
+          "pm.test('Content-Type is JSON', function () { pm.response.to.have.header('Content-Type'); pm.expect(pm.response.headers.get('Content-Type')).to.match(/application\\/json/i); });"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Default payload seeds for Users",
+              "pm.variables.set('userNombre', 'Usuario ' + pm.collectionVariables.get('timestamp'));",
+              "pm.variables.set('userEmail', 'user' + Math.floor(Math.random()*100000) + '@example.com');",
+              "pm.variables.set('userTelefono', '+58' + Math.floor(Math.random()*100000000));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Folder-level test placeholder"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users?limit=10&page=1", "host": ["{{baseUrl}}"], "path": ["users"], "query": [{"key":"limit","value":"10"},{"key":"page","value":"1"}] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('success true and data array', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.be.an('array'); });",
+                  "pm.test('pagination object present', function () { pm.expect(json).to.have.property('pagination'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/search?q={{searchTerm}}", "host": ["{{baseUrl}}"], "path": ["users","search"], "query": [{"key":"q","value":"{{searchTerm}}"}] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {"type":"text/javascript","exec":[
+                "const json = pm.response.json();",
+                "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                "pm.test('success true and data array', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.be.an('array'); });"
+              ]}
+            }
+          ]
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{userNombre}}\",\n  \"email\": \"{{userEmail}}\",\n  \"telefono\": \"{{userTelefono}}\"\n}"},
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          },
+          "event": [
+            {"listen":"test","script":{"type":"text/javascript","exec":[
+              "const json = pm.response.json();",
+              "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('success true and new user saved', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.have.property('id'); });",
+              "pm.collectionVariables.set('userId', json.data.id);"
+            ]}}
+          ]
+        },
+        {
+          "name": "Get User By Id",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/users/{{userId}}","host":["{{baseUrl}}"],"path":["users","{{userId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('User id matches', function () { pm.expect(json.data).to.have.property('id'); });"
+          ]}}]
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{userNombre}} Actualizado\",\n  \"email\": \"{{userEmail}}\",\n  \"telefono\": \"{{userTelefono}}\"\n}"},
+            "url": {"raw":"{{baseUrl}}/users/{{userId}}","host":["{{baseUrl}}"],"path":["users","{{userId}}"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true', function () { pm.expect(json).to.have.property('success', true); });"
+          ]}}]
+        },
+        {
+          "name": "Delete User",
+          "request": {"method":"DELETE","url": {"raw":"{{baseUrl}}/users/{{userId}}","host":["{{baseUrl}}"],"path":["users","{{userId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "User Stats",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/users/stats","host":["{{baseUrl}}"],"path":["users","stats"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('has totalUsers', function () { pm.expect(json.data).to.have.property('totalUsers'); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Propietarios",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {"type":"text/javascript","exec":[
+            "pm.variables.set('ownerNombre', 'Carlos');",
+            "pm.variables.set('ownerApellido', 'Perez');",
+            "pm.variables.set('ownerCedula', 'V-' + Math.floor(10000000 + Math.random()*80000000));",
+            "pm.variables.set('ownerTelefono', '+58' + Math.floor(Math.random()*100000000));",
+            "pm.variables.set('ownerCorreo', 'prop' + Math.floor(Math.random()*100000) + '@example.com');"
+          ]}
+        }
+      ],
+      "item": [
+        {
+          "name": "List Propietarios",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/propietarios?limit=10&page=1","host":["{{baseUrl}}"],"path":["propietarios"],"query":[{"key":"limit","value":"10"},{"key":"page","value":"1"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true and data array', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Search Propietarios",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/propietarios/search?q={{searchTerm}}","host":["{{baseUrl}}"],"path":["propietarios","search"],"query":[{"key":"q","value":"{{searchTerm}}"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('data is array', function () { pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Create Propietario",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{ownerNombre}}\",\n  \"apellido\": \"{{ownerApellido}}\",\n  \"cedula\": \"{{ownerCedula}}\",\n  \"telefono\": \"{{ownerTelefono}}\",\n  \"correo\": \"{{ownerCorreo}}\"\n}"},
+            "url": {"raw":"{{baseUrl}}/propietarios","host":["{{baseUrl}}"],"path":["propietarios"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+            "pm.test('Has id_propietario', function () { pm.expect(json.data).to.have.property('id_propietario'); });",
+            "pm.collectionVariables.set('propietarioId', json.data.id_propietario);"
+          ]}}]
+        },
+        {
+          "name": "Get Propietario By Id",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/propietarios/{{propietarioId}}","host":["{{baseUrl}}"],"path":["propietarios","{{propietarioId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('ID matches', function () { pm.expect(json.data).to.have.property('id_propietario'); });"
+          ]}}]
+        },
+        {
+          "name": "Update Propietario",
+          "request": {
+            "method": "PUT",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{ownerNombre}}\",\n  \"apellido\": \"{{ownerApellido}} Actualizado\",\n  \"cedula\": \"{{ownerCedula}}\",\n  \"telefono\": \"{{ownerTelefono}}\",\n  \"correo\": \"{{ownerCorreo}}\"\n}"},
+            "url": {"raw":"{{baseUrl}}/propietarios/{{propietarioId}}","host":["{{baseUrl}}"],"path":["propietarios","{{propietarioId}}"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true', function () { pm.expect(json).to.have.property('success', true); });"
+          ]}}]
+        },
+        {
+          "name": "Delete Propietario",
+          "request": {"method":"DELETE","url": {"raw":"{{baseUrl}}/propietarios/{{propietarioId}}","host":["{{baseUrl}}"],"path":["propietarios","{{propietarioId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "Propietarios Stats",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/propietarios/stats","host":["{{baseUrl}}"],"path":["propietarios","stats"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('has totalPropietarios', function () { pm.expect(json.data).to.have.property('totalPropietarios'); });"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

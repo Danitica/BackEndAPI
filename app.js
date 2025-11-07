@@ -16,6 +16,7 @@ const { validateJSON, sanitizeInput, validateContentType } = require('./middlewa
 // Importar rutas
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const propietarioRoutes = require('./routes/propietarioRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -103,6 +104,7 @@ app.get('/health', async (req, res) => {
 // Rutas de la API
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/propietarios`, propietarioRoutes);
 
 // Ruta para documentación básica
 app.get('/docs', (req, res) => {
@@ -125,7 +127,16 @@ app.get('/docs', (req, res) => {
             'GET /users/:id': 'Obtener usuario por ID',
             'POST /users': 'Crear nuevo usuario',
             'PUT /users/:id': 'Actualizar usuario',
-            'DELETE /users/:id': 'Eliminar usuario'
+            'DELETE /users/:id': 'Eliminar usuario',
+            // Propietarios
+            'GET /propietarios': 'Obtener todos los propietarios (con paginación)',
+            'GET /propietarios/search?q=texto': 'Buscar propietarios por nombre o apellido',
+            'GET /propietarios/stats': 'Obtener estadísticas de propietarios',
+            'GET /propietarios/:id': 'Obtener propietario por ID',
+            'POST /propietarios': 'Crear nuevo propietario',
+            'PUT /propietarios/:id': 'Actualizar propietario',
+            'PATCH /propietarios/:id': 'Actualizar parcialmente un propietario',
+            'DELETE /propietarios/:id': 'Eliminar propietario'
         },
         examples: {
             register: {

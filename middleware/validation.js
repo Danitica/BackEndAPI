@@ -353,6 +353,63 @@ module.exports = {
     validateUserPartial,
     validatePropietario,
     validatePropietarioPartial,
+    // Mascotas
+    validateMascota: [
+        body('nombre')
+            .trim().notEmpty().withMessage('El nombre es requerido')
+            .isLength({ min: 2, max: 100 }).withMessage('El nombre debe tener entre 2 y 100 caracteres')
+            .matches(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/).withMessage('El nombre solo puede contener letras y espacios'),
+        body('edad')
+            .isInt({ min: 0, max: 100 }).withMessage('La edad debe ser un número entero entre 0 y 100'),
+        body('raza')
+            .trim().notEmpty().withMessage('La raza es requerida')
+            .isLength({ min: 2, max: 100 }).withMessage('La raza debe tener entre 2 y 100 caracteres'),
+        body('id_propietario')
+            .isInt({ min: 1 }).withMessage('El id_propietario debe ser un número entero positivo')
+    ],
+    validateMascotaPartial: [
+        body('nombre')
+            .optional().trim()
+            .isLength({ min: 2, max: 100 }).withMessage('El nombre debe tener entre 2 y 100 caracteres')
+            .matches(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/).withMessage('El nombre solo puede contener letras y espacios'),
+        body('edad')
+            .optional()
+            .isInt({ min: 0, max: 100 }).withMessage('La edad debe ser un número entero entre 0 y 100'),
+        body('raza')
+            .optional().trim()
+            .isLength({ min: 2, max: 100 }).withMessage('La raza debe tener entre 2 y 100 caracteres'),
+        body('id_propietario')
+            .optional()
+            .isInt({ min: 1 }).withMessage('El id_propietario debe ser un número entero positivo')
+    ],
+    // Historial Médico
+    validateHistorialMedico: [
+        body('diagnostico')
+            .trim().notEmpty().withMessage('El diagnóstico es requerido')
+            .isLength({ min: 5, max: 500 }).withMessage('El diagnóstico debe tener entre 5 y 500 caracteres'),
+        body('motivo_consulta')
+            .trim().notEmpty().withMessage('El motivo de consulta es requerido')
+            .isLength({ min: 5, max: 500 }).withMessage('El motivo de consulta debe tener entre 5 y 500 caracteres'),
+        body('fecha')
+            .notEmpty().withMessage('La fecha es requerida')
+            .isISO8601().withMessage('La fecha debe estar en formato ISO 8601 (YYYY-MM-DD)'),
+        body('id_mascota')
+            .isInt({ min: 1 }).withMessage('El id_mascota debe ser un número entero positivo')
+    ],
+    validateHistorialMedicoPartial: [
+        body('diagnostico')
+            .optional().trim()
+            .isLength({ min: 5, max: 500 }).withMessage('El diagnóstico debe tener entre 5 y 500 caracteres'),
+        body('motivo_consulta')
+            .optional().trim()
+            .isLength({ min: 5, max: 500 }).withMessage('El motivo de consulta debe tener entre 5 y 500 caracteres'),
+        body('fecha')
+            .optional()
+            .isISO8601().withMessage('La fecha debe estar en formato ISO 8601 (YYYY-MM-DD)'),
+        body('id_mascota')
+            .optional()
+            .isInt({ min: 1 }).withMessage('El id_mascota debe ser un número entero positivo')
+    ],
     sanitizeInput,
     validateJSON,
     handleValidationErrors,

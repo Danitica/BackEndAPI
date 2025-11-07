@@ -17,6 +17,8 @@ const { validateJSON, sanitizeInput, validateContentType } = require('./middlewa
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const propietarioRoutes = require('./routes/propietarioRoutes');
+const mascotaRoutes = require('./routes/mascotaRoutes');
+const historialMedicoRoutes = require('./routes/historialMedicoRoutes');
 
 // Crear aplicación Express
 const app = express();
@@ -105,6 +107,8 @@ app.get('/health', async (req, res) => {
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/propietarios`, propietarioRoutes);
+app.use(`${API_PREFIX}/mascotas`, mascotaRoutes);
+app.use(`${API_PREFIX}/historial-medico`, historialMedicoRoutes);
 
 // Ruta para documentación básica
 app.get('/docs', (req, res) => {
@@ -136,7 +140,26 @@ app.get('/docs', (req, res) => {
             'POST /propietarios': 'Crear nuevo propietario',
             'PUT /propietarios/:id': 'Actualizar propietario',
             'PATCH /propietarios/:id': 'Actualizar parcialmente un propietario',
-            'DELETE /propietarios/:id': 'Eliminar propietario'
+            'DELETE /propietarios/:id': 'Eliminar propietario',
+            // Mascotas
+            'GET /mascotas': 'Obtener todas las mascotas (con paginación)',
+            'GET /mascotas/search?q=texto': 'Buscar mascotas por nombre o raza',
+            'GET /mascotas/stats': 'Obtener estadísticas de mascotas',
+            'GET /mascotas/:id': 'Obtener mascota por ID',
+            'POST /mascotas': 'Crear nueva mascota',
+            'PUT /mascotas/:id': 'Actualizar mascota',
+            'PATCH /mascotas/:id': 'Actualizar parcialmente una mascota',
+            'DELETE /mascotas/:id': 'Eliminar mascota',
+            // Historial Médico
+            'GET /historial-medico': 'Obtener todos los historiales médicos (con paginación)',
+            'GET /historial-medico/search?q=texto': 'Buscar por diagnóstico o motivo de consulta',
+            'GET /historial-medico/stats': 'Obtener estadísticas de historiales',
+            'GET /historial-medico/mascota/:idMascota': 'Obtener historiales de una mascota específica',
+            'GET /historial-medico/:id': 'Obtener historial médico por ID',
+            'POST /historial-medico': 'Crear nuevo historial médico',
+            'PUT /historial-medico/:id': 'Actualizar historial médico',
+            'PATCH /historial-medico/:id': 'Actualizar parcialmente un historial médico',
+            'DELETE /historial-medico/:id': 'Eliminar historial médico'
         },
         examples: {
             register: {

@@ -8,6 +8,8 @@
     { "key": "baseUrl", "value": "http://localhost:3000/api/v1" },
     { "key": "userId", "value": "1" },
     { "key": "propietarioId", "value": "1" },
+    { "key": "mascotaId", "value": "1" },
+    { "key": "historialId", "value": "1" },
     { "key": "searchTerm", "value": "Juan" }
   ],
   "event": [
@@ -159,6 +161,93 @@
       ]
     },
     {
+      "name": "Mascotas",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {"type":"text/javascript","exec":[
+            "pm.variables.set('petNombre', 'Firulais');",
+            "pm.variables.set('petEdad', Math.floor(Math.random()*15));",
+            "pm.variables.set('petRaza', 'Mestizo');"
+          ]}
+        }
+      ],
+      "item": [
+        {
+          "name": "List Mascotas",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/mascotas?limit=10&page=1","host":["{{baseUrl}}"],"path":["mascotas"],"query":[{"key":"limit","value":"10"},{"key":"page","value":"1"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true and data array', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Search Mascotas",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/mascotas/search?q={{searchTerm}}","host":["{{baseUrl}}"],"path":["mascotas","search"],"query":[{"key":"q","value":"{{searchTerm}}"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('data is array', function () { pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Create Mascota",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{petNombre}}\",\n  \"edad\": {{petEdad}},\n  \"raza\": \"{{petRaza}}\",\n  \"id_propietario\": {{propietarioId}}\n}"},
+            "url": {"raw":"{{baseUrl}}/mascotas","host":["{{baseUrl}}"],"path":["mascotas"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+            "pm.test('Has id_mascota', function () { pm.expect(json.data).to.have.property('id_mascota'); });",
+            "pm.collectionVariables.set('mascotaId', json.data.id_mascota);"
+          ]}}]
+        },
+        {
+          "name": "Get Mascota By Id",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/mascotas/{{mascotaId}}","host":["{{baseUrl}}"],"path":["mascotas","{{mascotaId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('ID present', function () { pm.expect(json.data).to.have.property('id_mascota'); });"
+          ]}}]
+        },
+        {
+          "name": "Update Mascota",
+          "request": {
+            "method": "PUT",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"nombre\": \"{{petNombre}} Actualizado\",\n  \"edad\": {{petEdad}},\n  \"raza\": \"{{petRaza}}\",\n  \"id_propietario\": {{propietarioId}}\n}"},
+            "url": {"raw":"{{baseUrl}}/mascotas/{{mascotaId}}","host":["{{baseUrl}}"],"path":["mascotas","{{mascotaId}}"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true', function () { pm.expect(json).to.have.property('success', true); });"
+          ]}}]
+        },
+        {
+          "name": "Delete Mascota",
+          "request": {"method":"DELETE","url": {"raw":"{{baseUrl}}/mascotas/{{mascotaId}}","host":["{{baseUrl}}"],"path":["mascotas","{{mascotaId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "Mascotas Stats",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/mascotas/stats","host":["{{baseUrl}}"],"path":["mascotas","stats"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('has totalMascotas', function () { pm.expect(json.data).to.have.property('totalMascotas'); });"
+          ]}}]
+        }
+      ]
+    },
+    {
       "name": "Propietarios",
       "event": [
         {
@@ -243,6 +332,103 @@
             "const json = pm.response.json();",
             "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
             "pm.test('has totalPropietarios', function () { pm.expect(json.data).to.have.property('totalPropietarios'); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Historial Medico",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {"type":"text/javascript","exec":[
+            "pm.variables.set('histDiagnostico', 'Diagnóstico de prueba');",
+            "pm.variables.set('histMotivo', 'Consulta de rutina');",
+            "const today = new Date().toISOString().split('T')[0];",
+            "pm.variables.set('histFecha', today);"
+          ]}
+        }
+      ],
+      "item": [
+        {
+          "name": "List Historial Medico",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/historial-medico?limit=10&page=1","host":["{{baseUrl}}"],"path":["historial-medico"],"query":[{"key":"limit","value":"10"},{"key":"page","value":"1"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true and data array', function () { pm.expect(json).to.have.property('success', true); pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Search Historial Medico",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/historial-medico/search?q={{searchTerm}}","host":["{{baseUrl}}"],"path":["historial-medico","search"],"query":[{"key":"q","value":"{{searchTerm}}"}]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('data is array', function () { pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Get Historial By Mascota",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/historial-medico/mascota/{{mascotaId}}","host":["{{baseUrl}}"],"path":["historial-medico","mascota","{{mascotaId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('data is array', function () { pm.expect(json.data).to.be.an('array'); });"
+          ]}}]
+        },
+        {
+          "name": "Create Historial Medico",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"diagnostico\": \"{{histDiagnostico}}\",\n  \"motivo_consulta\": \"{{histMotivo}}\",\n  \"fecha\": \"{{histFecha}}\",\n  \"id_mascota\": {{mascotaId}}\n}"},
+            "url": {"raw":"{{baseUrl}}/historial-medico","host":["{{baseUrl}}"],"path":["historial-medico"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Created 201', function () { pm.response.to.have.status(201); });",
+            "pm.test('Has id_historial', function () { pm.expect(json.data).to.have.property('id_historial'); });",
+            "pm.collectionVariables.set('historialId', json.data.id_historial);"
+          ]}}]
+        },
+        {
+          "name": "Get Historial By Id",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/historial-medico/{{historialId}}","host":["{{baseUrl}}"],"path":["historial-medico","{{historialId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('ID present', function () { pm.expect(json.data).to.have.property('id_historial'); });"
+          ]}}]
+        },
+        {
+          "name": "Update Historial Medico",
+          "request": {
+            "method": "PUT",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"diagnostico\": \"{{histDiagnostico}} Actualizado\",\n  \"motivo_consulta\": \"{{histMotivo}}\",\n  \"fecha\": \"{{histFecha}}\",\n  \"id_mascota\": {{mascotaId}}\n}"},
+            "url": {"raw":"{{baseUrl}}/historial-medico/{{historialId}}","host":["{{baseUrl}}"],"path":["historial-medico","{{historialId}}"]}
+          },
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('success true', function () { pm.expect(json).to.have.property('success', true); });"
+          ]}}]
+        },
+        {
+          "name": "Delete Historial Medico",
+          "request": {"method":"DELETE","url": {"raw":"{{baseUrl}}/historial-medico/{{historialId}}","host":["{{baseUrl}}"],"path":["historial-medico","{{historialId}}"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+          ]}}]
+        },
+        {
+          "name": "Historial Medico Stats",
+          "request": {"method":"GET","url": {"raw":"{{baseUrl}}/historial-medico/stats","host":["{{baseUrl}}"],"path":["historial-medico","stats"]}},
+          "event":[{"listen":"test","script":{"type":"text/javascript","exec":[
+            "const json = pm.response.json();",
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('has totalHistoriales', function () { pm.expect(json.data).to.have.property('totalHistoriales'); });"
           ]}}]
         }
       ]
